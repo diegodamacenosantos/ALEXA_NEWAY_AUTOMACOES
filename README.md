@@ -84,7 +84,7 @@ Todos os nós têm estes campos:
 
 Regra comum, menos no `set skills`: se o campo principal do nó (Texto, Volume ou Comando) estiver **vazio**, o valor vem do `msg.payload`. Se estiver preenchido, o nó usa o valor fixo.
 
-Todos devolvem em `msg.payload` um objeto com `ok: true` e os dados do que foi feito.
+Os quatro nós de ação (`set skills`, `set text`, `set volume` e `set comando`) devolvem em `msg.payload` um objeto com `ok: true` e os dados do que foi feito. O `set status` tem saída própria (abaixo). Se algo falhar, o nó mostra o erro na etiqueta e dispara o erro do fluxo (dá para capturar com um nó *catch*).
 
 ### set skills
 
@@ -95,7 +95,7 @@ Abre uma skill da Alexa no Echo.
 | Skill | a skill a abrir, escolhida numa lista com as skills da conta (as em desenvolvimento aparecem com "(dev)") |
 | Dispositivo | o Echo onde a skill abre |
 
-- **Entrada opcional:** `msg.skill` (id `amzn1...` ou o nome da skill) e `msg.device` (serial do Echo) sobrescrevem o que está no nó.
+- **Entrada opcional:** `msg.skill` (id `amzn1...` ou o nome exato da skill; o nome só funciona para skills que estão na lista da conta, as outras exigem o id) e `msg.device` (serial do Echo) sobrescrevem o que está no nó.
 - **Saída:** `{ ok, skill, device }`.
 
 ### set text
@@ -131,6 +131,8 @@ Envia um **comando de texto** à Alexa, como se você falasse com ela ("tocar m�
 |---|---|
 | Dispositivo | o Echo que recebe o comando |
 | Comando | o texto do comando. **Vazio** = usa o `msg.payload` |
+
+Neste nó o Echo vem só do campo **Dispositivo** (`msg.device` não é lido).
 
 - **Saída:** `{ ok, device, command }`.
 
