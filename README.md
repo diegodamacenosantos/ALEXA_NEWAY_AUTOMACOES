@@ -73,7 +73,7 @@ Os campos aparecem nesta ordem; **Dispositivo** é sempre o último.
 | Tipo | Skill, Falar, Volume ou Comando; define os demais campos |
 | Nome | só um rótulo para você reconhecer o nó no fluxo (opcional) |
 | Conta | a conta Alexa usada pelo nó. O lápis cria ou edita uma conta |
-| Atualizar listas | busca na Amazon os Echos (e as skills, no tipo Skill) da conta, para aparecerem nas listas. A conta precisa estar implantada e pronta |
+| Atualizar listas | as listas de Echos (e de skills, no tipo Skill) são carregadas ao abrir o nó; o botão carrega de novo. A conta precisa estar implantada e pronta |
 | Skill, Texto, Volume ou Comando | o campo próprio do tipo escolhido (veja abaixo) |
 | Dispositivo | o Echo que vai executar a ação, escolhido numa lista |
 
@@ -89,6 +89,8 @@ Cada um desses campos tem um seletor de tipo de valor:
 
 Campo **vazio** = o valor vem do `msg.payload`. Campo preenchido com caracteres ou números = valor fixo, e a mensagem só serve para disparar.
 
+Em todos os tipos, `msg.device` (serial ou nome do Echo) sobrescreve o **Dispositivo** do nó. A skill, o texto, o volume e o comando vêm sempre do que está configurado no nó (com o campo vazio, do `msg.payload`).
+
 Todos os tipos devolvem em `msg.payload` um objeto com `ok: true` e os dados do que foi feito. Se algo falhar, o nó mostra o erro na etiqueta e dispara o erro do fluxo (dá para capturar com um nó *catch*).
 
 ### Tipo Skill
@@ -100,7 +102,6 @@ Abre uma skill da Alexa no Echo.
 | Skill | a skill a abrir, escolhida numa lista com as skills da conta (as em desenvolvimento aparecem com "(dev)") |
 | Dispositivo | o Echo onde a skill abre |
 
-- **Entrada opcional:** `msg.skill` (id `amzn1...` ou o nome exato da skill; o nome só funciona para skills que estão na lista da conta, as outras exigem o id) e `msg.device` (serial do Echo) sobrescrevem o que está no nó.
 - **Saída:** `{ ok, skill, device }`.
 
 ### Tipo Falar
@@ -112,7 +113,6 @@ Faz a Alexa **falar** um texto.
 | Texto | a frase que ela fala. **Vazio** = fala o `msg.payload` (texto, número ou booleano) |
 | Dispositivo | o Echo que vai falar |
 
-- **Entrada opcional:** `msg.text` sobrescreve tudo; `msg.device` sobrescreve o Echo.
 - **Saída:** `{ ok, device, text }`.
 
 ### Tipo Volume
@@ -124,7 +124,6 @@ Ajusta o volume do Echo, de 1 a 100.
 | Volume | número de 1 a 100. **Vazio** = usa o `msg.payload` (número ou texto numérico, arredondado) |
 | Dispositivo | o Echo que muda de volume |
 
-- **Entrada opcional:** `msg.volume` sobrescreve tudo; `msg.device` sobrescreve o Echo.
 - **Erro:** valor fora de 1 a 100 (inclusive 0) ou que não seja número.
 - **Saída:** `{ ok, device, volume }`.
 
@@ -136,8 +135,6 @@ Envia um **comando de texto** à Alexa, como se você falasse com ela ("tocar m�
 |---|---|
 | Comando | o texto do comando. **Vazio** = usa o `msg.payload` |
 | Dispositivo | o Echo que recebe o comando |
-
-Neste tipo o Echo vem só do campo **Dispositivo** (`msg.device` não é lido).
 
 - **Saída:** `{ ok, device, command }`.
 
@@ -165,6 +162,8 @@ Neste tipo o Echo vem só do campo **Dispositivo** (`msg.device` não é lido).
 Baixe o `.tgz` atual e instale do mesmo jeito (Gerenciar paleta, Instalar, enviar o arquivo). Reinicie o Node-RED depois. O login da conta é mantido no arquivo do token.
 
 **Quem usa a versão antiga, com vários nós na paleta** (set skills, set text, set volume, set comando, set status): o nó único não reconhece os nós antigos. Antes de atualizar, faça uma cópia dos fluxos, apague os nós antigos e, depois de atualizar, recrie-os com o nó **Alexa** escolhendo o Tipo. O antigo "set status" não existe mais.
+
+**Atalhos de mensagem retirados:** `msg.text`, `msg.volume` e `msg.skill` não são mais lidos. Para texto ou volume vindos da mensagem, use o seletor **msg.** no campo, ou deixe o campo vazio e envie em `msg.payload`.
 
 ## Desinstalar
 
