@@ -10,7 +10,7 @@ Base: biblioteca `alexa-remote2`, já embutida no pacote (a instalação não ba
 
 ## O que vem no pacote
 
-Na paleta, no grupo **alexa-neway-automacoes**, aparece um só nó, **Alexa**. O primeiro campo é o **Tipo**, que define o que ele faz; só os campos do tipo escolhido aparecem. Tipos:
+Na paleta, no grupo **Alexa**, aparece um só nó, **Alexa**. O primeiro campo é o **Tipo**, que define o que ele faz; só os campos do tipo escolhido aparecem. Tipos:
 
 - **Skill**: abre uma skill no Echo.
 - **Falar**: faz a Alexa falar um texto.
@@ -25,7 +25,7 @@ A instalação é feita dentro do próprio Node-RED.
 
 1. Baixe o arquivo `.tgz` deste repositório.
 2. No Node-RED, abra o menu (três barras), **Gerenciar paleta**, aba **Instalar**, e envie o arquivo `.tgz` (botão de enviar/upload).
-3. Confirme a instalação. Na paleta aparece o grupo **alexa-neway-automacoes**. Se não aparecer, reinicie o Node-RED.
+3. Confirme a instalação. Na paleta aparece o grupo **Alexa**. Se não aparecer, reinicie o Node-RED.
 
 Se você tinha a versão antiga `node-red-contrib-alexa-plex`, desinstale-a antes (veja Desinstalar).
 
