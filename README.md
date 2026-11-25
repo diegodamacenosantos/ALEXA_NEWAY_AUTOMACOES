@@ -1,6 +1,6 @@
 # alexa-neway-automacoes
 
-Nós para o Node-RED que controlam os Echos de uma conta Amazon: abrir uma skill, falar um texto, enviar um comando de texto, ajustar o volume e acompanhar o estado da conta. O login é feito uma vez no navegador e depois se renova sozinho.
+Nó para o Node-RED que controla os Echos de uma conta Amazon: abrir uma skill, falar um texto, enviar um comando de texto e ajustar o volume. O login é feito uma vez no navegador e depois se renova sozinho.
 
 Neway Automações.
 
@@ -10,15 +10,14 @@ Base: biblioteca `alexa-remote2`, já embutida no pacote (a instalação não ba
 
 ## O que vem no pacote
 
-Na paleta, no grupo **alexa-neway-automacoes**, aparecem 5 nós:
+Na paleta, no grupo **alexa-neway-automacoes**, aparece um só nó, **Alexa**. O primeiro campo é o **Tipo**, que define o que ele faz; só os campos do tipo escolhido aparecem. Tipos:
 
-- **set skills**: abre uma skill no Echo.
-- **set text**: faz a Alexa falar um texto.
-- **set volume**: ajusta o volume do Echo.
-- **set comando**: envia um comando de texto, como se você falasse com ela.
-- **set status**: avisa quando a conta muda de estado e informa o diagnóstico.
+- **Skill**: abre uma skill no Echo.
+- **Falar**: faz a Alexa falar um texto.
+- **Volume**: ajusta o volume do Echo.
+- **Comando**: envia um comando de texto, como se você falasse com ela.
 
-A conta Alexa (login e conexão com a Amazon) não aparece na paleta, porque é um nó de configuração. Ela é criada de dentro de qualquer um dos nós (campo **Conta**, botão do lápis) e fica listada no menu, em **Configuration nodes**. Todos os nós usam uma conta.
+A conta Alexa (login e conexão com a Amazon) não aparece na paleta, porque é um nó de configuração. Ela é criada de dentro do nó Alexa (campo **Conta**, botão do lápis) e fica listada no menu, em **Configuration nodes**. Todo nó Alexa usa uma conta.
 
 ## Instalar
 
@@ -28,13 +27,7 @@ A instalação é feita dentro do próprio Node-RED.
 2. No Node-RED, abra o menu (três barras), **Gerenciar paleta**, aba **Instalar**, e envie o arquivo `.tgz` (botão de enviar/upload).
 3. Confirme a instalação. Na paleta aparece o grupo **alexa-neway-automacoes**. Se não aparecer, reinicie o Node-RED.
 
-Se o seu Node-RED não aceitar o envio, copie o arquivo para o servidor e rode, na pasta de dados do Node-RED (a que tem o `package.json` do usuário):
-
-```bash
-npm install /caminho/alexa-neway-automacoes.tgz
-```
-
-Se você tinha a versão antiga `node-red-contrib-alexa-plex`, desinstale-a antes (veja Desinstalar): os tipos de nó são iguais e conflitam.
+Se você tinha a versão antiga `node-red-contrib-alexa-plex`, desinstale-a antes (veja Desinstalar).
 
 ## Conta (feita uma vez)
 
@@ -56,7 +49,7 @@ Ao adicionar o primeiro nó, clique no lápis do campo **Conta** e preencha:
 ### Primeiro login
 
 1. Faça o **Deploy**.
-2. O status dos nós mostra `login: http://IP:PORTA`.
+2. O status do nó mostra `login: http://IP:PORTA`.
 3. Abra esse endereço no navegador **em http (não https)**, entre na sua conta Amazon e espere o status ficar **pronto** (verde).
 
 O login fica salvo no arquivo do token e se renova sozinho.
@@ -71,22 +64,34 @@ O login fica salvo no arquivo do token e se renova sozinho.
 - Os comandos esperam até 30 s a conta voltar, e repetem uma vez se a Amazon responder erro de autenticação.
 - Estados: `INIT`, `READY`, `OFFLINE`, `ERROR`, `WAIT_PROXY`.
 
-## Usar os nós
+## Usar o nó
 
-Todos os nós têm estes campos:
+Os campos aparecem nesta ordem; **Dispositivo** é sempre o último.
 
 | Campo | O que faz |
 |---|---|
+| Tipo | Skill, Falar, Volume ou Comando; define os demais campos |
 | Nome | só um rótulo para você reconhecer o nó no fluxo (opcional) |
 | Conta | a conta Alexa usada pelo nó. O lápis cria ou edita uma conta |
-| Atualizar lista | busca na Amazon os Echos (e as skills, no `set skills`) da conta, para aparecerem nas listas |
+| Atualizar listas | busca na Amazon os Echos (e as skills, no tipo Skill) da conta, para aparecerem nas listas. A conta precisa estar implantada e pronta |
+| Skill, Texto, Volume ou Comando | o campo próprio do tipo escolhido (veja abaixo) |
 | Dispositivo | o Echo que vai executar a ação, escolhido numa lista |
 
-Regra comum, menos no `set skills`: se o campo principal do nó (Texto, Volume ou Comando) estiver **vazio**, o valor vem do `msg.payload`. Se estiver preenchido, o nó usa o valor fixo.
+### Texto, Volume e Comando
 
-Os quatro nós de ação (`set skills`, `set text`, `set volume` e `set comando`) devolvem em `msg.payload` um objeto com `ok: true` e os dados do que foi feito. O `set status` tem saída própria (abaixo). Se algo falhar, o nó mostra o erro na etiqueta e dispara o erro do fluxo (dá para capturar com um nó *catch*).
+Cada um desses campos tem um seletor de tipo de valor:
 
-### set skills
+| Seletor | O que o campo vale |
+|---|---|
+| caracteres (a z) | o texto digitado |
+| números (0 9) | o número digitado |
+| msg. | o nome de uma propriedade da mensagem, como `payload` ou `payload.texto`; o valor vem só dela e, se ela não existir, o nó dá erro |
+
+Campo **vazio** = o valor vem do `msg.payload`. Campo preenchido com caracteres ou números = valor fixo, e a mensagem só serve para disparar.
+
+Todos os tipos devolvem em `msg.payload` um objeto com `ok: true` e os dados do que foi feito. Se algo falhar, o nó mostra o erro na etiqueta e dispara o erro do fluxo (dá para capturar com um nó *catch*).
+
+### Tipo Skill
 
 Abre uma skill da Alexa no Echo.
 
@@ -98,58 +103,50 @@ Abre uma skill da Alexa no Echo.
 - **Entrada opcional:** `msg.skill` (id `amzn1...` ou o nome exato da skill; o nome só funciona para skills que estão na lista da conta, as outras exigem o id) e `msg.device` (serial do Echo) sobrescrevem o que está no nó.
 - **Saída:** `{ ok, skill, device }`.
 
-### set text
+### Tipo Falar
 
 Faz a Alexa **falar** um texto.
 
 | Campo | O que faz |
 |---|---|
-| Dispositivo | o Echo que vai falar |
 | Texto | a frase que ela fala. **Vazio** = fala o `msg.payload` (texto, número ou booleano) |
+| Dispositivo | o Echo que vai falar |
 
 - **Entrada opcional:** `msg.text` sobrescreve tudo; `msg.device` sobrescreve o Echo.
 - **Saída:** `{ ok, device, text }`.
 
-### set volume
+### Tipo Volume
 
 Ajusta o volume do Echo, de 1 a 100.
 
 | Campo | O que faz |
 |---|---|
-| Dispositivo | o Echo que muda de volume |
 | Volume | número de 1 a 100. **Vazio** = usa o `msg.payload` (número ou texto numérico, arredondado) |
+| Dispositivo | o Echo que muda de volume |
 
 - **Entrada opcional:** `msg.volume` sobrescreve tudo; `msg.device` sobrescreve o Echo.
 - **Erro:** valor fora de 1 a 100 (inclusive 0) ou que não seja número.
 - **Saída:** `{ ok, device, volume }`.
 
-### set comando
+### Tipo Comando
 
 Envia um **comando de texto** à Alexa, como se você falasse com ela ("tocar música brasileira", "que horas são", "parar").
 
 | Campo | O que faz |
 |---|---|
-| Dispositivo | o Echo que recebe o comando |
 | Comando | o texto do comando. **Vazio** = usa o `msg.payload` |
+| Dispositivo | o Echo que recebe o comando |
 
-Neste nó o Echo vem só do campo **Dispositivo** (`msg.device` não é lido).
+Neste tipo o Echo vem só do campo **Dispositivo** (`msg.device` não é lido).
 
 - **Saída:** `{ ok, device, command }`.
 
-### set status
-
-Avisa quando a conta muda de estado e informa o diagnóstico. Só tem os campos **Nome** e **Conta** (não precisa de Dispositivo).
-
-- **Saída automática:** a cada mudança de estado, `msg.payload` = `{ account, code, text, needsLogin }`. `needsLogin` fica `true` em `WAIT_PROXY`; ligue a saída a Telegram, WhatsApp ou e-mail para saber na hora que o login é necessário.
-- **Entrada:** qualquer mensagem devolve o diagnóstico (estado, idade do token, última renovação, último erro, tentativas, próxima tentativa).
-
 ## Exemplos
 
-- **Parar a Alexa:** um *inject* com o texto `parar` ligado a um `set comando` vazio.
-- **Ajustar o volume:** um *inject* numérico `40` ligado a um `set volume` vazio.
-- **Avisar por voz:** uma *function* com `msg.payload = "A porta abriu"` ligada a um `set text` vazio.
-- **Abrir uma skill:** um `set skills` com a skill e o Echo escolhidos nas listas, ligado a um *inject*.
-- **Saber quando o login caiu:** `set status` ligado a um nó de aviso (Telegram, WhatsApp ou e-mail).
+- **Parar a Alexa:** um *inject* com o texto `parar` ligado a um nó Alexa do tipo Comando com o campo vazio.
+- **Ajustar o volume:** um *inject* numérico `40` ligado a um nó Alexa do tipo Volume com o campo vazio.
+- **Avisar por voz:** uma *function* com `msg.payload = "A porta abriu"` ligada a um nó Alexa do tipo Falar com o campo vazio.
+- **Abrir uma skill:** um nó Alexa do tipo Skill com a skill e o Echo escolhidos nas listas, ligado a um *inject*.
 
 ## Problemas comuns
 
@@ -167,11 +164,13 @@ Avisa quando a conta muda de estado e informa o diagnóstico. Só tem os campos 
 
 Baixe o `.tgz` atual e instale do mesmo jeito (Gerenciar paleta, Instalar, enviar o arquivo). Reinicie o Node-RED depois. O login da conta é mantido no arquivo do token.
 
+**Quem usa a versão antiga, com vários nós na paleta** (set skills, set text, set volume, set comando, set status): o nó único não reconhece os nós antigos. Antes de atualizar, faça uma cópia dos fluxos, apague os nós antigos e, depois de atualizar, recrie-os com o nó **Alexa** escolhendo o Tipo. O antigo "set status" não existe mais.
+
 ## Desinstalar
 
 Antes de remover o pacote, apague tudo que o usa:
 
-1. Apague **todos os nós** `set ...` de todos os fluxos.
+1. Apague **todos os nós** Alexa de todos os fluxos.
 2. Apague a **conta Alexa salva**: menu, **Configuration nodes**, escolha a conta e exclua.
 3. Faça o **Deploy**.
 4. Menu, **Gerenciar paleta**, aba **Nós**, ache `alexa-neway-automacoes` e clique em **Remover**.
